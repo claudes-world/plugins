@@ -1,0 +1,16 @@
+{
+  "state_dir": null,
+  "log_tail_bytes": 20000,
+  "log_head_bytes": 4000,
+  "operator_result_max_wait_seconds": 300,
+  "cursor_models": [
+    "gpt-5.3-codex",
+    "gpt-5.3-codex-low",
+    "gpt-5.3-codex-high",
+    "gpt-5.3-codex-xhigh",
+    "gpt-5.2",
+    "claude-4.6-opus-high",
+    "claude-4.6-opus-max",
+    "claude-4.6-opus-high-thinking"
+  ]
+}

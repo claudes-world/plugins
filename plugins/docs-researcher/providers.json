@@ -1,0 +1,12 @@
+{
+  "required_paid_services": [],
+  "providers": [
+    {
+      "name": "Context7",
+      "command": "npx",
+      "required": false,
+      "billing": "Anonymous rate-limited access; optional account plans may be paid. No key supplied by this plugin.",
+      "fallback": "WebSearch in the host, explicitly labeled when version fidelity is reduced."
+    }
+  ]
+}

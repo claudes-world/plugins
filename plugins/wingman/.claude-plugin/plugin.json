@@ -1,0 +1,12 @@
+{
+  "name": "wingman",
+  "description": "A standalone Codex co-researcher MCP plugin with reusable named sessions and journaling.",
+  "version": "0.2.3",
+  "keywords": [
+    "mcp",
+    "codex",
+    "research",
+    "wingman"
+  ],
+  "license": "MIT"
+}

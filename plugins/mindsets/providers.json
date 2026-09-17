@@ -1,0 +1,12 @@
+{
+  "required_paid_services": [],
+  "providers": [
+    {
+      "name": "Codex co-researcher",
+      "command": "codex",
+      "required": false,
+      "billing": "Optional user-installed CLI/account for the wingman mode; host subscription or usage billing depends on user configuration.",
+      "fallback": "Report unavailable co-research and continue other local mindset modes; solo research conclusions remain provisional."
+    }
+  ]
+}

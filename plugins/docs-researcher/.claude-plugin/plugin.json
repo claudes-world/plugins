@@ -1,0 +1,13 @@
+{
+  "name": "docs-researcher",
+  "description": "Version-pinned library documentation on demand: a sandboxed researcher subagent wired to the Context7 MCP (resolve-library-id / query-docs) with WebSearch fallback. Scoped to the subagent \u2014 not the orchestrator/agent base context.",
+  "version": "0.1.1",
+  "keywords": [
+    "mcp",
+    "context7",
+    "docs",
+    "research",
+    "subagent"
+  ],
+  "license": "MIT"
+}

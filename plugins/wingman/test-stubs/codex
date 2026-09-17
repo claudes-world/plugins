@@ -1,0 +1,19 @@
+#!/usr/bin/env bun
+
+import { appendFileSync } from 'fs'
+
+const stdin = await new Response(Bun.stdin.stream()).text()
+const argv = process.argv.slice(2)
+const trace = process.env.OPERATORS_STUB_TRACE
+if (trace) {
+  appendFileSync(trace, `${JSON.stringify({ tool: 'codex', cwd: process.cwd(), argv, stdin })}\n`)
+}
+
+if (stdin.includes('SLEEP_LONG')) await Bun.sleep(1200)
+if (stdin.includes('LARGE_OUTPUT')) console.log('X'.repeat(1200))
+if (!argv.includes('resume') && !stdin.includes('NO_UUID')) {
+  console.log('codex session: 11111111-2222-3333-4444-555555555555')
+}
+console.log('stub codex reply')
+
+if (stdin.includes('EXIT_7')) process.exit(7)

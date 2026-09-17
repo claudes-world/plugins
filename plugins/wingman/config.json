@@ -1,0 +1,6 @@
+{
+  "state_dir": null,
+  "log_tail_bytes": 20000,
+  "log_head_bytes": 4000,
+  "operator_result_max_wait_seconds": 300
+}

@@ -1,0 +1,19 @@
+{
+  "name": "mindsets",
+  "version": "0.3.1",
+  "description": "Operating-mode skills that re-trigger the right cognitive stance for a session: researcher (generative exploration), mechanic (keep-alive / operator execution discipline), wingman (codex co-researcher collaboration), and bakeoff (undirected multi-entrant competitions for idea mining).",
+  "author": {
+    "name": "Claude's World"
+  },
+  "keywords": [
+    "autonomous-agents",
+    "bake-off",
+    "codex",
+    "collaboration",
+    "design",
+    "mindset",
+    "operator",
+    "research"
+  ],
+  "license": "MIT"
+}

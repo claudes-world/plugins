@@ -1,0 +1,17 @@
+{
+  "name": "image-gen",
+  "version": "0.1.4",
+  "description": "General raster image production and editing through Codex image_gen, local procedural rendering and post-processing, SVG-to-img2img polish, and background removal.",
+  "author": {
+    "name": "Claude's World"
+  },
+  "keywords": [
+    "images",
+    "image-generation",
+    "image_gen",
+    "image-gen",
+    "background-removal",
+    "raster"
+  ],
+  "license": "MIT"
+}

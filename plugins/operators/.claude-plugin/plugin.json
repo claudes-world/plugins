@@ -1,0 +1,13 @@
+{
+  "name": "operators",
+  "description": "Policy-free operator dispatch MCP tools for Codex, agy, and Cursor.",
+  "version": "0.2.2",
+  "keywords": [
+    "mcp",
+    "codex",
+    "operators",
+    "gemini",
+    "cursor"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,12 @@
+#!/usr/bin/env bun
+
+import { appendFileSync } from 'fs'
+
+const stdin = await new Response(Bun.stdin.stream()).text()
+const argv = process.argv.slice(2)
+const trace = process.env.OPERATORS_STUB_TRACE
+if (trace) {
+  appendFileSync(trace, `${JSON.stringify({ tool: 'agy', cwd: process.cwd(), argv, stdin })}\n`)
+}
+
+console.log('stub agy reply')

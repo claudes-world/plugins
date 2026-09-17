@@ -1,0 +1,18 @@
+{
+  "required_paid_services": [],
+  "providers": [
+    {
+      "name": "Codex image_gen",
+      "command": "codex",
+      "required": false,
+      "billing": "Requires a host account with image_gen access; account subscriptions or usage charges are external to this plugin. No direct paid image API integration.",
+      "fallback": "Generation reports unavailable. Local Pillow/border background removal works without a provider."
+    },
+    {
+      "name": "rembg U2-Net",
+      "required": false,
+      "billing": "Local inference with optional model downloads; no paid service.",
+      "fallback": "Explicit border engine for limited-palette backgrounds."
+    }
+  ]
+}

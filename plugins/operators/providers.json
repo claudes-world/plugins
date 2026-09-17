@@ -1,0 +1,26 @@
+{
+  "required_paid_services": [],
+  "providers": [
+    {
+      "name": "Codex",
+      "command": "codex",
+      "required": false,
+      "billing": "User-installed CLI and account; subscription or usage billing depends on user configuration.",
+      "fallback": "Calling this tool reports a spawn error if its CLI is absent; other tools remain available."
+    },
+    {
+      "name": "Cursor",
+      "command": "cursor-agent",
+      "required": false,
+      "billing": "Optional paid account/usage provider; never called unless explicitly selected.",
+      "fallback": "Calling this tool reports a spawn error if its CLI is absent; other tools remain available."
+    },
+    {
+      "name": "agy adapter",
+      "command": "agy",
+      "required": false,
+      "billing": "Optional user-supplied CLI adapter with the documented argv contract; provider account may be paid. Not installed or fetched by this plugin.",
+      "fallback": "Calling this tool reports a spawn error if its CLI is absent; other tools remain available."
+    }
+  ]
+}

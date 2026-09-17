@@ -1,0 +1,12 @@
+{
+  "required_paid_services": [],
+  "providers": [
+    {
+      "name": "Codex",
+      "command": "codex",
+      "required": false,
+      "billing": "User-installed CLI and account; subscription or usage billing depends on user configuration.",
+      "fallback": "Session listing works locally; asking reports a spawn error if Codex is absent."
+    }
+  ]
+}

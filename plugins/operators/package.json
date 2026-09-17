@@ -1,0 +1,15 @@
+{
+  "name": "claude-operators-mcp",
+  "version": "0.2.2",
+  "license": "MIT",
+  "type": "module",
+  "bin": "./server.bundle.js",
+  "scripts": {
+    "start": "bun server.bundle.js",
+    "build": "bun build.ts",
+    "test": "bash test-harness.sh"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0"
+  }
+}

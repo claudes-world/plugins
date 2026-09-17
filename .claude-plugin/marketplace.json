@@ -1,7 +1,111 @@
 {
   "name": "claudes-world-core",
   "owner": {
-    "name": "Claude\u2019s World"
+    "name": "Claude's World"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "docs-researcher",
+      "description": "Version-pinned library documentation on demand: a sandboxed researcher subagent wired to the Context7 MCP (resolve-library-id / query-docs) with WebSearch fallback. Scoped to the subagent — not the orchestrator/agent base context.",
+      "version": "0.1.1",
+      "keywords": [
+        "mcp",
+        "context7",
+        "docs",
+        "research",
+        "subagent"
+      ],
+      "source": "./plugins/docs-researcher"
+    },
+    {
+      "name": "image-gen",
+      "description": "General raster image production and editing through Codex image_gen, local procedural rendering and post-processing, SVG-to-img2img polish, and background removal.",
+      "version": "0.1.4",
+      "author": {
+        "name": "Claude's World"
+      },
+      "keywords": [
+        "images",
+        "image-generation",
+        "image_gen",
+        "image-gen",
+        "background-removal",
+        "raster"
+      ],
+      "source": "./plugins/image-gen"
+    },
+    {
+      "name": "interaction-craft",
+      "description": "How interfaces earn their feel — the motion guidance (stagger, never synchronize), perceived-performance doctrine, and the iOS mechanics behind both. Distilled from a deep read of the Telegram iOS source.",
+      "version": "0.1.2",
+      "author": {
+        "name": "Claude's World"
+      },
+      "keywords": [
+        "motion",
+        "animation",
+        "transition",
+        "easing",
+        "spring",
+        "stagger",
+        "gesture",
+        "interaction",
+        "ux",
+        "ui",
+        "perceived-performance",
+        "latency",
+        "responsiveness",
+        "ios",
+        "uikit",
+        "swift",
+        "craft",
+        "polish"
+      ],
+      "source": "./plugins/interaction-craft"
+    },
+    {
+      "name": "mindsets",
+      "description": "Operating-mode skills that re-trigger the right cognitive stance for a session: researcher (generative exploration), mechanic (keep-alive / operator execution discipline), wingman (codex co-researcher collaboration), and bakeoff (undirected multi-entrant competitions for idea mining).",
+      "version": "0.3.1",
+      "author": {
+        "name": "Claude's World"
+      },
+      "keywords": [
+        "autonomous-agents",
+        "bake-off",
+        "codex",
+        "collaboration",
+        "design",
+        "mindset",
+        "operator",
+        "research"
+      ],
+      "source": "./plugins/mindsets"
+    },
+    {
+      "name": "operators",
+      "description": "Policy-free operator dispatch MCP tools for Codex, agy, and Cursor.",
+      "version": "0.2.2",
+      "keywords": [
+        "mcp",
+        "codex",
+        "operators",
+        "gemini",
+        "cursor"
+      ],
+      "source": "./plugins/operators"
+    },
+    {
+      "name": "wingman",
+      "description": "A standalone Codex co-researcher MCP plugin with reusable named sessions and journaling.",
+      "version": "0.2.3",
+      "keywords": [
+        "mcp",
+        "codex",
+        "research",
+        "wingman"
+      ],
+      "source": "./plugins/wingman"
+    }
+  ]
 }

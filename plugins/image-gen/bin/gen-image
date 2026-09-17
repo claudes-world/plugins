@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+"""Dispatch raster image generation to Codex's built-in image_gen tool."""
+
+import argparse
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+
+
+BANNED_MODEL_MESSAGE = (
+    "Provider model flags are unsupported; use codex image_gen"
+)
+
+
+def reject_google_model_flags(argv: list[str]) -> None:
+    if any(arg.startswith("--model") or arg.startswith("-m") for arg in argv):
+        print(BANNED_MODEL_MESSAGE, file=sys.stderr)
+        raise SystemExit(2)
+
+
+def default_output(prompt: str) -> Path:
+    slug = "".join(char if char.isalnum() else "-" for char in prompt[:30].lower())
+    slug = "-".join(filter(None, slug.split("-"))) or "image"
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    return Path(f"/tmp/gen-{timestamp}-{slug}.png")
+
+
+def main() -> int:
+    reject_google_model_flags(sys.argv[1:])
+
+    parser = argparse.ArgumentParser(
+        description="Generate an image with Codex's built-in image_gen tool"
+    )
+    parser.add_argument("prompt", help="Image description")
+    parser.add_argument(
+        "--out",
+        "-o",
+        type=Path,
+        default=None,
+        help="Output file (default: /tmp/gen-<timestamp>-<slug>.png)",
+    )
+    parser.add_argument(
+        "--aspect",
+        "-a",
+        default="1:1",
+        help="Target aspect ratio, such as 1:1, 16:9, or 9:16 (default: 1:1)",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=360,
+        help="Maximum seconds to wait for Codex (default: 360)",
+    )
+    args = parser.parse_args()
+
+    output = (args.out or default_output(args.prompt)).expanduser().resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    instruction = (
+        "Use Codex's built-in image_gen tool to generate a real model-rendered image. "
+        "Do not call any Google image API or any other paid external image provider. "
+        f"Save the final image to this exact absolute path: {output}. "
+        f"Target aspect ratio: {args.aspect}. Prompt: {args.prompt}. "
+        "If image_gen is unavailable, stop and report that; do not substitute another "
+        "image generator or a procedural script."
+    )
+    command = [
+        "codex",
+        "exec",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "workspace-write",
+        "--add-dir",
+        str(output.parent),
+        "-c",
+        "sandbox_workspace_write.network_access=true",
+        "-c",
+        "approval_policy=never",
+        instruction,
+    ]
+
+    try:
+        completed = subprocess.run(command, cwd=output.parent, timeout=args.timeout)
+    except FileNotFoundError:
+        print("error: codex CLI not found", file=sys.stderr)
+        return 127
+    except subprocess.TimeoutExpired:
+        print(f"error: codex image_gen timed out after {args.timeout}s", file=sys.stderr)
+        return 124
+
+    if completed.returncode != 0:
+        return completed.returncode
+    if not output.is_file() or output.stat().st_size == 0:
+        print(f"error: codex completed without creating {output}", file=sys.stderr)
+        return 1
+
+    print(output)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

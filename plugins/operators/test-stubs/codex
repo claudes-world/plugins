@@ -1,0 +1,23 @@
+#!/usr/bin/env bun
+
+import { appendFileSync, existsSync, readdirSync } from 'fs'
+import { join } from 'path'
+
+const stdin = await new Response(Bun.stdin.stream()).text()
+const argv = process.argv.slice(2)
+const trace = process.env.OPERATORS_STUB_TRACE
+if (trace) {
+  const jobDir = process.env.OPERATORS_STATE_DIR ? join(process.env.OPERATORS_STATE_DIR, 'jobs') : null
+  const jobFilesAtStartup = jobDir && existsSync(jobDir) ? readdirSync(jobDir).filter(file => file.endsWith('.json')) : []
+  appendFileSync(trace, `${JSON.stringify({ tool: 'codex', cwd: process.cwd(), argv, stdin, jobFilesAtStartup })}\n`)
+}
+
+if (stdin.includes('SLEEP_LONG')) await Bun.sleep(1200)
+if (stdin.includes('LARGE_OUTPUT')) console.log('X'.repeat(1200))
+if (stdin.includes('DECOY_UUID')) console.log('decoy 99999999-8888-7777-6666-555555555555')
+if (!argv.includes('resume') && !stdin.includes('NO_UUID')) {
+  console.log(stdin.includes('DECOY_UUID') ? 'session id: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' : 'codex session: 11111111-2222-3333-4444-555555555555')
+}
+console.log('stub codex reply')
+
+if (stdin.includes('EXIT_7')) process.exit(7)

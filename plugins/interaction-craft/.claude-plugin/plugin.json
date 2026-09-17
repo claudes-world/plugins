@@ -1,0 +1,29 @@
+{
+  "name": "interaction-craft",
+  "version": "0.1.2",
+  "description": "How interfaces earn their feel \u2014 the motion guidance (stagger, never synchronize), perceived-performance doctrine, and the iOS mechanics behind both. Distilled from a deep read of the Telegram iOS source.",
+  "author": {
+    "name": "Claude's World"
+  },
+  "keywords": [
+    "motion",
+    "animation",
+    "transition",
+    "easing",
+    "spring",
+    "stagger",
+    "gesture",
+    "interaction",
+    "ux",
+    "ui",
+    "perceived-performance",
+    "latency",
+    "responsiveness",
+    "ios",
+    "uikit",
+    "swift",
+    "craft",
+    "polish"
+  ],
+  "license": "MIT"
+}
