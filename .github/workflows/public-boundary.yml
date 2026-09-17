@@ -1,0 +1,9 @@
+name: Public source boundary
+on: [push, pull_request]
+jobs:
+  boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -s tests -v
+      - run: python3 tests/check_public.py .
