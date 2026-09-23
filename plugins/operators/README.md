@@ -27,6 +27,8 @@ Use the staged tools for non-trivial implementation:
 4. `codex_implement`: apply accepted follow-up work.
 5. `codex_critique`: ask once more, then stop when the returns diminish.
 
+Fresh Codex dispatches (`codex_plan`, `codex_exec`) pass `-m gpt-6-sol` unless the call sets `model`. `codex_implement` and `codex_critique` resume on the model recorded for the session (sessions recorded without one resume on `gpt-6-sol`); `-m` is always passed on resume because `codex exec resume` without it runs on the CLI config default.
+
 Use `codex_exec` for short one-shot analysis or mechanical dispatches where session continuity does not matter. Because it does not write a registry entry, a successful `codex_exec` does not require Codex to print a session UUID; when a UUID is present, the response metadata includes `codex_session_id`. Pass `cwd` explicitly; one-shot tools never inherit the server process directory.
 
 Codex briefs and directives are always sent via stdin. Resume calls use the registered session cwd and put options before `resume`:

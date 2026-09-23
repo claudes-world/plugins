@@ -574,11 +574,16 @@ export function codexFreshArgv(bin: string, cwd: string, sandbox: Sandbox, netwo
   return argv
 }
 
-export function codexResumeArgv(bin: string, record: SessionRecord): string[] {
+// `codex exec resume` without -m runs on the CLI config default, not the
+// session's original model, so pass the recorded model (or the caller's
+// default for records written before the model was recorded).
+export function codexResumeArgv(bin: string, record: SessionRecord, defaultModel: string | null = null): string[] {
+  const model = record.model ?? defaultModel
   return [
     bin,
     'exec',
     '--skip-git-repo-check',
+    ...(model ? ['-m', model] : []),
     '--sandbox',
     record.sandbox,
     '-c',

@@ -61,6 +61,8 @@ const AGY_MODELS: Record<string, { model: string; efforts: string[]; defaultEffo
   'gemini-3.5-flash': { model: 'gemini-3.5-flash', efforts: ['low', 'medium', 'high'], defaultEffort: 'high' },
 }
 const CURSOR_MODELS = Array.isArray(CONFIG.cursor_models) ? CONFIG.cursor_models.map(String) : []
+// Fresh Codex dispatches pin this unless the caller passes `model`; resumes reuse the session's model.
+const CODEX_DEFAULT_MODEL = 'gpt-6-sol'
 
 function stageAfter(record: ReturnType<typeof loadSession> | null, tool: 'implement' | 'critique'): number {
   const current = record?.last_stage ?? (tool === 'implement' ? 1 : 2)
@@ -72,6 +74,7 @@ async function codexPlan(args: JsonObject) {
   const cwd = resolve(expandHome(requiredString(args, 'cwd')))
   const replace = optionalBoolean(args.replace)
   const effort = parseEffort(args.effort, 'xhigh')
+  const model = optionalString(args.model) ?? CODEX_DEFAULT_MODEL
   // Preserve implementation sandbox and network defaults:
   // stay sandboxed by default. git commit works fine under workspace-write
   // (plain clone AND worktree, tested) — the actual blocker was outbound
@@ -94,14 +97,14 @@ async function codexPlan(args: JsonObject) {
     effort,
     sandbox,
     network,
-    model: null,
+    model,
     journalPath: null,
     journalMode: null,
     journalMessage: null,
     lastStage: 1,
     register: true,
   }
-  const argv = codexFreshArgv(CODEX_BIN, cwd, sandbox, network, effort, null)
+  const argv = codexFreshArgv(CODEX_BIN, cwd, sandbox, network, effort, model)
   if (optionalBoolean(args.background)) {
     const job = await startBackground(RT, SERVER_PATH, session, argv, cwd, directive, path, intent, replace)
     return content(toolText(`background job started: ${job}`, { job, session, status: 'running', log_path: path }))
@@ -132,6 +135,7 @@ async function codexExec(args: JsonObject) {
   const cwd = resolve(expandHome(requiredString(args, 'cwd')))
   const session = optionalString(args.session) ?? 'codex-exec'
   const effort: Effort = parseEffort(args.effort, 'medium')
+  const model = optionalString(args.model) ?? CODEX_DEFAULT_MODEL
   // See codexPlan for sandbox/network defaults.
   const sandbox: Sandbox = parseSandbox(args.sandbox, 'workspace-write')
   const network = parseBoolean(args.network, true)
@@ -145,14 +149,14 @@ async function codexExec(args: JsonObject) {
     effort,
     sandbox,
     network,
-    model: null,
+    model,
     journalPath: null,
     journalMode: null,
     journalMessage: null,
     lastStage: null,
     register: false,
   }
-  const argv = codexFreshArgv(CODEX_BIN, cwd, sandbox, network, effort, null)
+  const argv = codexFreshArgv(CODEX_BIN, cwd, sandbox, network, effort, model)
   if (optionalBoolean(args.background)) {
     const job = await startBackground(RT, SERVER_PATH, session, argv, cwd, prompt, path, intent)
     return content(toolText(`background job started: ${job}`, { job, status: 'running', log_path: path }))
@@ -176,7 +180,7 @@ async function codexImplement(args: JsonObject) {
   const nextStage = stageAfter(record, 'implement')
   const path = logPath(RT, session, `codex-stage${nextStage}`)
   const intent = { kind: 'codex_resume' as const, session, journalMode: null, journalMessage: null, lastStage: nextStage }
-  const argv = codexResumeArgv(CODEX_BIN, record)
+  const argv = codexResumeArgv(CODEX_BIN, record, CODEX_DEFAULT_MODEL)
   if (optionalBoolean(args.background)) {
     const job = await startBackground(RT, SERVER_PATH, session, argv, record.cwd, directive, path, intent)
     return content(toolText(`background job started: ${job}`, { job, session, status: 'running', log_path: path }))
@@ -204,7 +208,7 @@ async function codexCritique(args: JsonObject) {
   const nextStage = stageAfter(record, 'critique')
   const path = logPath(RT, session, `codex-stage${nextStage}`)
   const intent = { kind: 'codex_resume' as const, session, journalMode: null, journalMessage: null, lastStage: nextStage }
-  const { run, final } = await runForeground(RT, codexResumeArgv(CODEX_BIN, record), record.cwd, question, path, intent)
+  const { run, final } = await runForeground(RT, codexResumeArgv(CODEX_BIN, record, CODEX_DEFAULT_MODEL), record.cwd, question, path, intent)
   return content(
     toolText(final.ok ? tailFile(RT, path) : `codex_critique failed: ${final.error}\n\n${tailFile(RT, path)}`, {
       session,
@@ -278,8 +282,8 @@ async function cursorAsk(args: JsonObject) {
 }
 
 const tools = [
-  { name: 'codex_plan', description: 'Stage 1 plan-only Codex dispatch.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, brief_path: { type: 'string' }, cwd: { type: 'string' }, effort: { type: 'string', enum: ['low', 'medium', 'high', 'xhigh'] }, sandbox: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, network: { type: 'boolean', description: 'Under workspace-write, whether outbound network is enabled (default true) via sandbox_workspace_write.network_access. No effect under danger-full-access.' }, background: { type: 'boolean' }, replace: { type: 'boolean' } }, required: ['session', 'brief_path', 'cwd'] } },
-  { name: 'codex_exec', description: 'One-shot fresh Codex dispatch with no registry entry.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, brief: { type: 'string' }, brief_path: { type: 'string' }, cwd: { type: 'string' }, effort: { type: 'string', enum: ['low', 'medium', 'high', 'xhigh'] }, sandbox: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, network: { type: 'boolean', description: 'Under workspace-write, whether outbound network is enabled (default true) via sandbox_workspace_write.network_access. No effect under danger-full-access.' }, background: { type: 'boolean' } }, required: ['cwd'] } },
+  { name: 'codex_plan', description: 'Stage 1 plan-only Codex dispatch.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, brief_path: { type: 'string' }, cwd: { type: 'string' }, model: { type: 'string', description: 'Codex model. Defaults to gpt-6-sol.' }, effort: { type: 'string', enum: ['low', 'medium', 'high', 'xhigh'] }, sandbox: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, network: { type: 'boolean', description: 'Under workspace-write, whether outbound network is enabled (default true) via sandbox_workspace_write.network_access. No effect under danger-full-access.' }, background: { type: 'boolean' }, replace: { type: 'boolean' } }, required: ['session', 'brief_path', 'cwd'] } },
+  { name: 'codex_exec', description: 'One-shot fresh Codex dispatch with no registry entry.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, brief: { type: 'string' }, brief_path: { type: 'string' }, cwd: { type: 'string' }, model: { type: 'string', description: 'Codex model. Defaults to gpt-6-sol.' }, effort: { type: 'string', enum: ['low', 'medium', 'high', 'xhigh'] }, sandbox: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, network: { type: 'boolean', description: 'Under workspace-write, whether outbound network is enabled (default true) via sandbox_workspace_write.network_access. No effect under danger-full-access.' }, background: { type: 'boolean' } }, required: ['cwd'] } },
   { name: 'codex_implement', description: 'Resume a staged Codex implementation session.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, directive: { type: 'string' }, directive_path: { type: 'string' }, background: { type: 'boolean' } }, required: ['session'] } },
   { name: 'codex_critique', description: 'Resume Codex for self-critique.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, question: { type: 'string' } }, required: ['session'] } },
   { name: 'codex_result', description: 'Fetch a background Codex job.', inputSchema: { type: 'object', properties: { job: { type: 'string' }, wait_seconds: { type: 'number' } }, required: ['job'] } },
@@ -291,7 +295,7 @@ const tools = [
 // Keep in sync with .claude-plugin/plugin.json — a server advertising a version
 // the plugin no longer ships makes deployed behavior impossible to correlate
 // with a release.
-const mcp = new Server({ name: 'operators', version: '0.2.2' }, { capabilities: { tools: {} } })
+const mcp = new Server({ name: 'operators', version: '0.2.3' }, { capabilities: { tools: {} } })
 mcp.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }))
 mcp.setRequestHandler(CallToolRequestSchema, async req => {
   const args = asObject(req.params.arguments)

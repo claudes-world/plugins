@@ -117,7 +117,7 @@ async function wingmanAsk(args: JsonObject) {
   if (!record) throw new Error(`unknown session ${session}; pass new to create it`)
   const path = logPath(RT, session, 'wingman')
   const intent = { kind: 'codex_resume' as const, session, journalMode: mode, journalMessage: message, lastStage: null }
-  const { run, final } = await runForeground(RT, codexResumeArgv(CODEX_BIN, record), record.cwd, prompt, path, intent)
+  const { run, final } = await runForeground(RT, codexResumeArgv(CODEX_BIN, record, WINGMAN_MODEL), record.cwd, prompt, path, intent)
   record = maybeLoadSession(RT, session) ?? record
   return content(
     toolText(final.ok ? tailFile(RT, path) : `wingman_ask failed: ${final.error}\n\n${tailFile(RT, path)}`, {
@@ -156,7 +156,7 @@ const tools = [
   { name: 'wingman_sessions', description: 'List or inspect wingman sessions.', inputSchema: { type: 'object', properties: { name: { type: 'string' } } } },
 ]
 
-const mcp = new Server({ name: 'wingman', version: '0.2.3' }, { capabilities: { tools: {} } })
+const mcp = new Server({ name: 'wingman', version: '0.2.4' }, { capabilities: { tools: {} } })
 mcp.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }))
 mcp.setRequestHandler(CallToolRequestSchema, async req => {
   const args = asObject(req.params.arguments)
