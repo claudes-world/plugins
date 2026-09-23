@@ -85,7 +85,7 @@
     {
       "name": "operators",
       "description": "Policy-free operator dispatch MCP tools for Codex, agy, and Cursor.",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "keywords": [
         "mcp",
         "codex",
@@ -98,7 +98,7 @@
     {
       "name": "wingman",
       "description": "A standalone Codex co-researcher MCP plugin with reusable named sessions and journaling.",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "keywords": [
         "mcp",
         "codex",
