@@ -62,7 +62,7 @@ const AGY_MODELS: Record<string, { model: string; efforts: string[]; defaultEffo
 }
 const CURSOR_MODELS = Array.isArray(CONFIG.cursor_models) ? CONFIG.cursor_models.map(String) : []
 // Fresh Codex dispatches pin this unless the caller passes `model`; resumes reuse the session's model.
-const CODEX_DEFAULT_MODEL = 'gpt-6-sol'
+const CODEX_DEFAULT_MODEL = 'gpt-6.1-sol'
 
 function stageAfter(record: ReturnType<typeof loadSession> | null, tool: 'implement' | 'critique'): number {
   const current = record?.last_stage ?? (tool === 'implement' ? 1 : 2)
@@ -282,8 +282,8 @@ async function cursorAsk(args: JsonObject) {
 }
 
 const tools = [
-  { name: 'codex_plan', description: 'Stage 1 plan-only Codex dispatch.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, brief_path: { type: 'string' }, cwd: { type: 'string' }, model: { type: 'string', description: 'Codex model. Defaults to gpt-6-sol.' }, effort: { type: 'string', enum: ['low', 'medium', 'high', 'xhigh'] }, sandbox: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, network: { type: 'boolean', description: 'Under workspace-write, whether outbound network is enabled (default true) via sandbox_workspace_write.network_access. No effect under danger-full-access.' }, background: { type: 'boolean' }, replace: { type: 'boolean' } }, required: ['session', 'brief_path', 'cwd'] } },
-  { name: 'codex_exec', description: 'One-shot fresh Codex dispatch with no registry entry.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, brief: { type: 'string' }, brief_path: { type: 'string' }, cwd: { type: 'string' }, model: { type: 'string', description: 'Codex model. Defaults to gpt-6-sol.' }, effort: { type: 'string', enum: ['low', 'medium', 'high', 'xhigh'] }, sandbox: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, network: { type: 'boolean', description: 'Under workspace-write, whether outbound network is enabled (default true) via sandbox_workspace_write.network_access. No effect under danger-full-access.' }, background: { type: 'boolean' } }, required: ['cwd'] } },
+  { name: 'codex_plan', description: 'Stage 1 plan-only Codex dispatch.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, brief_path: { type: 'string' }, cwd: { type: 'string' }, model: { type: 'string', description: 'Codex model. Defaults to gpt-6.1-sol.' }, effort: { type: 'string', enum: ['low', 'medium', 'high', 'xhigh'] }, sandbox: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, network: { type: 'boolean', description: 'Under workspace-write, whether outbound network is enabled (default true) via sandbox_workspace_write.network_access. No effect under danger-full-access.' }, background: { type: 'boolean' }, replace: { type: 'boolean' } }, required: ['session', 'brief_path', 'cwd'] } },
+  { name: 'codex_exec', description: 'One-shot fresh Codex dispatch with no registry entry.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, brief: { type: 'string' }, brief_path: { type: 'string' }, cwd: { type: 'string' }, model: { type: 'string', description: 'Codex model. Defaults to gpt-6.1-sol.' }, effort: { type: 'string', enum: ['low', 'medium', 'high', 'xhigh'] }, sandbox: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, network: { type: 'boolean', description: 'Under workspace-write, whether outbound network is enabled (default true) via sandbox_workspace_write.network_access. No effect under danger-full-access.' }, background: { type: 'boolean' } }, required: ['cwd'] } },
   { name: 'codex_implement', description: 'Resume a staged Codex implementation session.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, directive: { type: 'string' }, directive_path: { type: 'string' }, background: { type: 'boolean' } }, required: ['session'] } },
   { name: 'codex_critique', description: 'Resume Codex for self-critique.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, question: { type: 'string' } }, required: ['session'] } },
   { name: 'codex_result', description: 'Fetch a background Codex job.', inputSchema: { type: 'object', properties: { job: { type: 'string' }, wait_seconds: { type: 'number' } }, required: ['job'] } },
@@ -295,7 +295,7 @@ const tools = [
 // Keep in sync with .claude-plugin/plugin.json — a server advertising a version
 // the plugin no longer ships makes deployed behavior impossible to correlate
 // with a release.
-const mcp = new Server({ name: 'operators', version: '0.2.3' }, { capabilities: { tools: {} } })
+const mcp = new Server({ name: 'operators', version: '0.2.4' }, { capabilities: { tools: {} } })
 mcp.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }))
 mcp.setRequestHandler(CallToolRequestSchema, async req => {
   const args = asObject(req.params.arguments)
