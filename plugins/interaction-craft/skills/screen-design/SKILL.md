@@ -116,7 +116,7 @@ Every layout ask becomes measurable targets before any code changes.
 - **Actions repeated many times a day** (tab switches, keyboard shortcuts, typing, list navigation): no animation, or a colour change of 150 ms at most.
 - **Data being read** (balances, prices, charts updating from a feed): no decorative motion and nothing that moves or resizes the value. A value may cross-fade in 200 ms or less, or mark a change with a tint that appears at once and fades out (up or down colour on the digits plus a soft background of the same hue, fading over up to 1000 ms ease-out); the value is readable for the whole fade, and nothing flashes on first render.
 - **Every animation names its purpose**: feedback, spatial continuity, a state change, or preventing a jump. "Looks nice" on a frequent surface is not a purpose.
-- **UI motion stays under 300 ms** (a fading change highlight that blocks nothing is the exception above), never uses ease-in, never scales from 0 (start ≥ 0.9 with opacity 0), and animates transform and opacity only.
+- **UI motion is at most 300 ms; sheet and screen transitions follow the ranges in `motion`; a fading change highlight that blocks nothing may run up to 1000 ms (the exception above).** No pure ease-in; ease-in-out only for on-screen movement between two resting places. Never scale from 0 (start ≥ 0.9 with opacity 0); animate transform and opacity only.
 - **Theme switches are instant**; cross-fading every colour at once makes a switch take visibly longer than the tap.
 - **No enter animation on first render** for elements that are already in their default state.
 - **Motion is never the only channel**: the end state shows the change without the animation.
@@ -148,19 +148,19 @@ A collision check alone is not a review: a screen with no overlaps can fail ever
 
 | Severity | Location | What a person sees | Rule | Before → after |
 | --- | --- | --- | --- | --- |
-| Block | Login, `login-360-light.png`, `LoginScreen.kt:190` | The footer wraps after "Secured" | Wrapping is a decision | 3 lines → 2 rows, `maxLines = 1` each |
+| Block | Login, `example-360-light.png`, `ExampleScreen.kt:42` | The footer wraps after "Secured" | Wrapping is a decision | 3 lines → 2 rows, `maxLines = 1` each |
 
-- **Block**: breaks reading or use, misses a numeric target beyond its tolerance, or hits a hard block in [review-checklist.md](review-checklist.md#hard-blocks). **Fix**: a visible inconsistency to correct this round. **Polish**: isolated refinement.
+- **Block**: breaks reading or use, misses a numeric target beyond its tolerance, or hits a hard block in [review-checklist.md](review-checklist.md#hard-blocks). Hard blocks apply to elements the change introduced, modified or moved. A hard-block condition on an untouched element is reported in a separate "Pre-existing" table and does not by itself make the verdict Block. **Fix**: a visible inconsistency to correct this round. **Polish**: isolated refinement.
 - Location names the screen, the render file and `path:line`. Before → after is numeric wherever a number exists.
 - End with one line, `Verdict: Block` or `Verdict: Approve`. Approve only what you inspected; list uninspected renders as "Not inspected".
 
-## Worked examples (ours)
+## Worked examples
 
-1. An ask to "move the logo down and the button up" was implemented as a 16 dp shift nobody could see.
-   The fix was numeric targets (logo centre at 28% of screen height, button bottom at 80%) and an
+1. A request to "move the logo down and the button up" is implemented as a 16 dp shift that nobody can see.
+   The correction is numeric targets (logo centre at 28% of screen height, button bottom at 80%) and an
    old-versus-new render pair. Lesson: words like "down" and "up" are not targets; fractions are.
-2. A trust footer was moved up from the bottom edge, wrapped onto a second line mid-phrase, and a build
-   label sat outside its brackets. A collision-only review passed it. The fix was a bottom-anchored
+2. A trust footer is moved up from the bottom edge, wraps onto a second line mid-phrase, and a build
+   label sits outside its brackets. A collision-only review passes it. The correction is a bottom-anchored
    footer with two explicit rows (statement row, then a lighter monospace version row) that can never
    wrap. Lesson: read the render for breaks and anchoring, not only for overlaps.
 

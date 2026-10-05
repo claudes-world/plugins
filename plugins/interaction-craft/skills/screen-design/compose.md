@@ -73,7 +73,7 @@ if (fits) Row { /* one line */ } else Column { /* two explicit rows */ }
 ```
 
 - Reserve the height of anchored text from the same measurement (sum of row heights), so content above stays a fixed distance clear at every font scale.
-- Button labels that must stay on one line can shrink within limits: `BasicText(label, maxLines = 1, autoSize = TextAutoSize.StepBased(minFontSize = size × 0.7, maxFontSize = size, stepSize = 0.5.sp))`.
+- Button labels that must stay on one line can shrink within limits. `TextAutoSize` is experimental (`@ExperimentalFoundationApi` or the current opt-in) and its API may change: `BasicText(label, maxLines = 1, autoSize = TextAutoSize.StepBased(minFontSize = size * 0.7, maxFontSize = size, stepSize = 0.5.sp))`.
 - Hold units together with a no-break space: `"16 GB"`, `"v1.2.3 (build 45)"`. A word joiner `⁠` stops a break without adding space.
 - Headings: `TextStyle(lineBreak = LineBreak.Heading)` balances line lengths. Descriptions: `LineBreak.Paragraph` with `hyphens = Hyphens.Auto` reduces ragged and orphaned last lines.
 
@@ -149,11 +149,13 @@ val EaseStandard = CubicBezierEasing(0.2f, 0f, 0f, 1f)            // Material st
 
 | Change | Spec |
 | --- | --- |
-| Press scale | `tween(100–150, easing = EaseOutStrong)` |
+| Press scale (UI motion is at most 300 ms) | `tween(100–150, easing = EaseOutStrong)` |
 | Colour of a control state | `tween(150, easing = LinearEasing)` |
 | Small element enters | `fadeIn(tween(250, easing = EaseOutStrong)) + slideInVertically(tween(250, easing = EaseOutStrong)) { offset12dpPx }` |
 | Small element exits | `fadeOut(tween(150)) + slideOutVertically(tween(150)) { -offset12dpPx }` |
-| Sheet | 300 ms, `EaseStandard` or the project's sheet token |
+| Sheet or screen transition | Duration from the ranges in `motion` (at most 300 ms), `EaseStandard` or the project's sheet token |
+| On-screen movement between two resting places | `tween(200–300, easing = EaseInOutStrong)` |
+| Fading change highlight that blocks nothing | `tween(up to 1000, easing = EaseOutStrong)` on the tint; the value stays readable |
 | Gesture release | `spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)` with the gesture velocity (see `motion`) |
 
 Theme colours apply instantly. A component that animates colour with `animateColorAsState` must
@@ -191,12 +193,14 @@ Tag the elements a target names and assert their bounds; the target then holds o
 ```kotlin
 @Test fun logoCentreAt28Percent() {
     compose.setContent { AppTheme { LoginScreen(/* … */) } }
-    val root = compose.onRoot().getBoundsInRoot()
-    val logo = compose.onNodeWithTag("login-logo").getBoundsInRoot()
+    val root = compose.onRoot().getUnclippedBoundsInRoot()          // DpRect
+    val logo = compose.onNodeWithTag("login-logo").getUnclippedBoundsInRoot()
     val centre = (logo.top + logo.bottom) / 2
-    assertEquals(0.28f, centre / root.height, 0.01f)          // tolerance: 1 % of the height
+    assertEquals(0.28f, centre / root.height, 0.01f)          // Dp / Dp is a Float; tolerance: 1 % of the height
 }
 ```
+
+`getUnclippedBoundsInRoot()` comes from the `androidx.compose.ui:ui-test` artifact (`ui-test-junit4` brings it in transitively).
 
 ## Renders
 

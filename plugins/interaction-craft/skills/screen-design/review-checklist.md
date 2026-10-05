@@ -5,7 +5,7 @@ The full list a design reviewer walks. Each item is checkable from a render (`[r
 
 ## Hard blocks
 
-Any of these makes the verdict `Block`, whatever else the screen gets right:
+Hard blocks apply to elements the change introduced, modified or moved. A hard-block condition on an untouched element is reported in a separate "Pre-existing" table and does not by itself make the verdict Block. Any hard block on such an element makes the verdict `Block`, whatever else the screen gets right:
 
 1. Text that wraps or truncates where the design did not intend it (labels, buttons, footers, versions, identifiers, money).
 2. An element that moved, resized or changed colour without being asked.
@@ -97,7 +97,7 @@ Any of these makes the verdict `Block`, whatever else the screen gets right:
 ## L. Motion and press feedback
 
 - [code] Every pressable element responds on press-down (scale 0.96 or the project token, 100–150 ms ease-out, or a pressed fill).
-- [code] No animation on high-frequency actions or on data being read; UI motion under 300 ms; no ease-in; no scale from 0; only transform and opacity animated.
+- [code] No animation on high-frequency actions or on data being read; UI motion at most 300 ms, sheet and screen transitions within the ranges in `motion`, a fading change highlight that blocks nothing up to 1000 ms; no pure ease-in, ease-in-out only for on-screen movement between two resting places; no scale from 0; only transform and opacity animated.
 - [code] Theme switches do not cross-fade every colour.
 - [code] Enter and exit follow `motion`: exits shorter than enters, same path in and out.
 

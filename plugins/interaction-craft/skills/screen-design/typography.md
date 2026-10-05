@@ -60,7 +60,7 @@ Checks for every text element:
 
 - Set in monospace: version strings, build numbers, order and transaction IDs the person reads out, one-time codes, hashes shown on purpose.
 - Monospace rows are secondary: one step lighter in colour, and the same size or smaller than the statement beside them.
-- Keep the whole string on one line: `v0.2.33 (build 35)`, with no break inside the brackets.
+- Keep the whole string on one line: `v1.2.3 (build 45)`, with no break inside the brackets.
 - Group long codes for reading (`4F2A 9C1B`), and let them be selected and copied.
 
 ## Truncation

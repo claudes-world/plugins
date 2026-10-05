@@ -18,7 +18,7 @@ guessing and a reviewer can check without your reasoning. You plan; you do not b
 
 ## 1. Load the guidance
 
-1. The `screen-design` skill: `${CLAUDE_PLUGIN_ROOT}/skills/screen-design/SKILL.md`. If that variable is not set in your shell, locate it with `find ~/.claude/plugins -path '*interaction-craft/skills/screen-design/SKILL.md' 2>/dev/null | head -1`. Read the platform file beside it (`compose.md` or `web.md`), plus `typography.md` and `surfaces-and-colour.md` when the ask touches type, surfaces or colour.
+1. The `screen-design` skill: locate the files with Bash. Run `echo "${CLAUDE_PLUGIN_ROOT:-unset}"`; if it prints a path, the skill directory is `<path>/skills/screen-design/`. If it prints `unset`, run `find ~/.claude/plugins -type d -path '*interaction-craft*/skills/screen-design' | head -1`. Read the platform file beside it (`compose.md` or `web.md`), plus `typography.md` and `surfaces-and-colour.md` when the ask touches type, surfaces or colour.
 2. The project profile and tokens: Glob `**/design/DESIGN-PROFILE.md`, `**/DESIGN-TOKENS.md`, and read the theme source and brand files the profile names. If there is no profile, say so in the plan and read tokens from the theme source.
 3. The `motion` skill (same plugin, `skills/motion/SKILL.md`) when anything animates.
 
