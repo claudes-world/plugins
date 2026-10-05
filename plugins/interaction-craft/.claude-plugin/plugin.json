@@ -1,7 +1,7 @@
 {
   "name": "interaction-craft",
-  "version": "0.1.2",
-  "description": "How interfaces earn their feel \u2014 the motion guidance (stagger, never synchronize), perceived-performance doctrine, and the iOS mechanics behind both. Distilled from a deep read of the Telegram iOS source.",
+  "version": "0.2.0",
+  "description": "How interfaces earn their feel \u2014 the motion guidance (stagger, never synchronize), perceived-performance doctrine, and the iOS mechanics behind both, distilled from a deep read of the Telegram iOS source; plus screen design (layout, typography, colour, touch targets, UI wording) with a design planner and a design reviewer that turn asks into numeric targets and check renders against them, Jetpack Compose first.",
   "author": {
     "name": "Claude's World"
   },
@@ -23,7 +23,15 @@
     "uikit",
     "swift",
     "craft",
-    "polish"
+    "polish",
+    "layout",
+    "typography",
+    "design-review",
+    "compose",
+    "jetpack-compose",
+    "accessibility",
+    "contrast",
+    "screen-design"
   ],
   "license": "MIT"
 }
