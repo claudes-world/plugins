@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+# Local VNC test rig: Xvfb display + x11vnc (VNC auth) + Chrome on that display.
+#   bin/test-rig [start]   start (idempotent); prints the env for server.py
+#   bin/test-rig env       print the env lines again
+#   bin/test-rig status    show what is running
+#   bin/test-rig stop      tear everything down
+# Overrides: VNC_RIG_DISPLAY (99), VNC_RIG_PORT (5999), VNC_RIG_DIR, VNC_RIG_CHROME.
+set -euo pipefail
+
+disp="${VNC_RIG_DISPLAY:-99}"
+port="${VNC_RIG_PORT:-5999}"
+rig="${VNC_RIG_DIR:-/tmp/vnc-computer-rig-$(id -u)}"
+chrome="${VNC_RIG_CHROME:-/usr/bin/google-chrome}"
+geometry="${VNC_RIG_GEOMETRY:-1280x800x24}"
+
+alive() { [[ -f "$rig/$1.pid" ]] && kill -0 "$(cat "$rig/$1.pid")" 2>/dev/null; }
+
+print_env() {
+  echo "VNC_HOST=127.0.0.1"
+  echo "VNC_PORT=$port"
+  echo "VNC_PASSWORD_FILE=$rig/password"
+}
+
+wait_for() {  # wait_for <seconds> <command...>
+  local deadline=$((SECONDS + $1)); shift
+  until "$@"; do
+    (( SECONDS < deadline )) || return 1
+    sleep 0.2
+  done
+}
+
+port_open() { (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; }
+
+start() {
+  for bin in Xvfb x11vnc "$chrome"; do
+    command -v "$bin" >/dev/null || { echo "test-rig: missing $bin (see README host prerequisites)" >&2; exit 1; }
+  done
+  if alive xvfb && alive x11vnc && alive chrome; then
+    echo "test-rig: already running on :$disp port $port" >&2
+    print_env
+    return 0
+  fi
+  stop >/dev/null 2>&1 || true
+  if [[ -e "/tmp/.X11-unix/X$disp" ]]; then
+    echo "test-rig: display :$disp is already in use by another X server" >&2
+    exit 1
+  fi
+  mkdir -p "$rig"
+  chmod 700 "$rig"
+  # 8 chars: classic VNC auth only uses the first 8 bytes.
+  local pw
+  pw="$(head -c 48 /dev/urandom | base64 | tr -dc 'A-Za-z0-9')"
+  ( umask 077; printf '%s' "${pw:0:8}" >"$rig/password" )
+
+  setsid Xvfb ":$disp" -screen 0 "$geometry" -nolisten tcp >"$rig/xvfb.log" 2>&1 &
+  echo $! >"$rig/xvfb.pid"
+  wait_for 10 test -S "/tmp/.X11-unix/X$disp" || { echo "test-rig: Xvfb did not start" >&2; exit 1; }
+
+  setsid x11vnc -display ":$disp" -rfbport "$port" -localhost -passwdfile "$rig/password" \
+    -forever -shared -noxdamage -nowf -quiet >"$rig/x11vnc.log" 2>&1 &
+  echo $! >"$rig/x11vnc.pid"
+  wait_for 15 port_open || { echo "test-rig: x11vnc did not listen on $port" >&2; tail -5 "$rig/x11vnc.log" >&2; exit 1; }
+
+  DISPLAY=":$disp" setsid "$chrome" --no-sandbox --user-data-dir="$rig/chrome-profile" \
+    --window-size=1280,800 --window-position=0,0 --no-first-run --no-default-browser-check \
+    --disable-gpu --password-store=basic --disable-features=Translate,MediaRouter \
+    --disable-session-crashed-bubble about:blank >"$rig/chrome.log" 2>&1 &
+  echo $! >"$rig/chrome.pid"
+  echo "test-rig: Xvfb :$disp ($geometry), x11vnc 127.0.0.1:$port, chrome pid $(cat "$rig/chrome.pid")" >&2
+  print_env
+}
+
+stop() {
+  local name pid
+  for name in chrome x11vnc xvfb; do
+    if [[ -f "$rig/$name.pid" ]]; then
+      pid="$(cat "$rig/$name.pid")"
+      # each component was started with setsid, so pid == process group id
+      kill -TERM -- "-$pid" 2>/dev/null || true
+      wait_for 5 bash -c "! kill -0 -- -$pid 2>/dev/null" || kill -KILL -- "-$pid" 2>/dev/null || true
+      rm -f -- "$rig/$name.pid"
+    fi
+  done
+  # Only ever delete the rig's own Chrome profile.
+  if [[ -d "$rig/chrome-profile" && "$rig" == /tmp/vnc-computer-rig-* ]]; then
+    rm -rf -- "$rig/chrome-profile"
+  fi
+  echo "test-rig: stopped" >&2
+}
+
+status() {
+  local name
+  for name in xvfb x11vnc chrome; do
+    if alive "$name"; then echo "$name: running (pid $(cat "$rig/$name.pid"))"; else echo "$name: stopped"; fi
+  done
+}
+
+case "${1:-start}" in
+  start) start ;;
+  stop) stop ;;
+  status) status ;;
+  env) print_env ;;
+  *) echo "usage: $0 [start|stop|status|env]" >&2; exit 2 ;;
+esac
