@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""Turn a vnc-computer recording (frames.jsonl) into an ffmpeg concat list.
+
+    bin/frames-concat RECORDING_DIR            -> writes RECORDING_DIR/concat.txt
+
+Each frame is held until the next frame's real capture timestamp, so the video
+keeps wall-clock timing even if frames were dropped. This script does not run
+ffmpeg; assemble the video on a media machine (see README).
+"""
+import json
+import os
+import sys
+
+
+def main(argv):
+    if len(argv) != 2 or argv[1] in ('-h', '--help'):
+        sys.stderr.write(__doc__)
+        return 2
+    rec = os.path.abspath(argv[1])
+    with open(os.path.join(rec, 'frames.jsonl'), encoding='utf-8') as fh:
+        rows = [json.loads(line) for line in fh if line.strip()]
+    if not rows:
+        sys.stderr.write('frames-concat: no frames in %s\n' % rec)
+        return 1
+    rows.sort(key=lambda r: r['frame'])
+    gaps = [b['t'] - a['t'] for a, b in zip(rows, rows[1:])]
+    last = sorted(gaps)[len(gaps) // 2] if gaps else 0.2
+    lines = ['ffconcat version 1.0']
+    for row, gap in zip(rows, gaps + [last]):
+        lines.append("file '%s'" % row['file'])
+        lines.append('duration %.4f' % max(gap, 0.001))
+    lines.append("file '%s'" % rows[-1]['file'])  # concat demuxer needs the last file repeated
+    out = os.path.join(rec, 'concat.txt')
+    with open(out, 'w', encoding='utf-8') as fh:
+        fh.write('\n'.join(lines) + '\n')
+    total = rows[-1]['t'] - rows[0]['t'] + last
+    print('%s: %d frames, %.1fs' % (out, len(rows), total))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

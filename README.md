@@ -1,7 +1,7 @@
 # Plugins
 
-Source of truth for six public core plugins: docs-researcher, image-gen,
-interaction-craft, mindsets, operators, and wingman. Contributions and fixes
+Source of truth for seven public core plugins: docs-researcher, image-gen,
+interaction-craft, mindsets, operators, vnc-computer, and wingman. Contributions and fixes
 belong in this repository.
 
 The root Claude marketplace is `claudes-world-core`. Each directory under

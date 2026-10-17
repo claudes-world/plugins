@@ -7,4 +7,5 @@ The root MIT license applies only to owned material. Each package retains its co
 - [interaction-craft](plugins/interaction-craft/THIRD_PARTY_NOTICES.md)
 - [mindsets](plugins/mindsets/THIRD_PARTY_NOTICES.md)
 - [operators](plugins/operators/THIRD_PARTY_NOTICES.md)
+- [vnc-computer](plugins/vnc-computer/THIRD_PARTY_NOTICES.md)
 - [wingman](plugins/wingman/THIRD_PARTY_NOTICES.md)
