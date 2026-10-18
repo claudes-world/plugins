@@ -47,7 +47,18 @@ Stop conditions:
 - Never type passwords.
 - If a login is missing, stop and write `LOGIN_REQUIRED` in REPORT.md.
 - If a macOS permission is missing, stop and write `PERMISSION_REQUIRED: <which>`.
+- If macOS demands the account password (for example "Privacy & Security is
+  trying to modify your system settings"), stop and write
+  `PASSWORD_REQUIRED: <setting>`.
+
+Do not stop for confirmations inside this brief; stop only for credentials or
+out-of-scope actions.
 ```
+
+A non-interactive `codex exec` ends the session whenever the model asks for
+confirmation, so the last line above matters. Keep one log per run
+(`codex-run<N>-<label>.log`) instead of a single `codex.log`; adjust the
+redirect targets in steps 2 and 3 accordingly.
 
 Keep secrets out of the brief.
 
@@ -88,10 +99,16 @@ failed".
 
 Before the first GUI run, the human must grant Terminal both Screen Recording
 and Accessibility under System Settings, Privacy & Security, plus any
-Codex/ChatGPT helper that appears in those lists. If the machine is remote, do
+Codex/ChatGPT helper that appears in those lists. On macOS 26 the pane is
+named "Screen & System Audio Recording", a separate entry from Accessibility;
+grant both. If the machine is remote, do
 this through a screen-sharing client. The permission prompt may or may not
 appear automatically, so open the panes by hand if it does not. After that
 every future run inherits the grants.
+
+When a computer-use agent toggles a principal in that pane, macOS can demand the
+account password. The agent must stop with `PASSWORD_REQUIRED: <setting>`
+(never type it); expect a human tap via screen sharing, then resume.
 
 #### Pre-flight check (about 10 seconds, run BEFORE dispatching GUI work)
 
@@ -116,6 +133,21 @@ Poll every 20-30 s from a background task, not in a foreground loop. The log
 prints `session id: <uuid>` near the top. Continue the same session for a
 follow-up directive with `codex exec resume <id>` (same cwd rule as the local
 codex-implement skill: run it from the original working directory).
+
+Extract the id from the previous run's log BEFORE truncating or overwriting it,
+and never run `: > codex.log` before that copy:
+
+```sh
+ssh <mac> 'grep -m1 "session id:" <workdir>/codex-run1-<label>.log'
+```
+
+An EMPTY id is dangerous: `codex exec resume` with no id silently starts a NEW
+session whose only context is the directive. Check the id is non-empty before
+resuming. Write the next run to a fresh log (`codex-run2-<label>.log`).
+
+When you resume to answer a confirmation the previous run stopped on, re-state
+the remaining steps in the directive; the resumed run should not be assumed to
+carry the plan forward.
 
 When `head -1 REPORT.md` shows `STATUS: DONE`, bring deliverables back:
 
