@@ -79,9 +79,32 @@ SCRIPT
 ssh <mac> 'chmod +x <workdir>/run.command && open -a Terminal <workdir>/run.command'
 ```
 
-Terminal is the TCC principal. The human allows Screen Recording and
-Accessibility for Terminal once (System Settings, Privacy & Security), plus any
-Codex helper that prompts. After that every future run inherits the grants.
+Terminal is the TCC principal, but launching from Terminal is not enough on
+its own. Validated on a first GUI run: the codex still reported
+`PERMISSION_REQUIRED: Screen Recording` (ffmpeg avfoundation "cannot configure
+display capture", `screencapture` "could not create image from display") and
+the computer-use helper failed with "Sky Computer Use native pipe startup
+failed".
+
+Before the first GUI run, the human must grant Terminal both Screen Recording
+and Accessibility under System Settings, Privacy & Security, plus any
+Codex/ChatGPT helper that appears in those lists. If the machine is remote, do
+this through a screen-sharing client. The permission prompt may or may not
+appear automatically, so open the panes by hand if it does not. After that
+every future run inherits the grants.
+
+#### Pre-flight check (about 10 seconds, run BEFORE dispatching GUI work)
+
+```sh
+ssh <mac> 'cat > /tmp/tcc-check.command <<EOF
+#!/bin/zsh
+screencapture -x /tmp/tcc-check.png && echo CAPTURE_OK > /tmp/tcc-check.txt || echo CAPTURE_DENIED > /tmp/tcc-check.txt
+EOF
+chmod +x /tmp/tcc-check.command; rm -f /tmp/tcc-check.txt; open -a Terminal /tmp/tcc-check.command; sleep 5; cat /tmp/tcc-check.txt'
+```
+
+Dispatch the GUI task only on `CAPTURE_OK`. On `CAPTURE_DENIED` (or no output),
+stop and ask the human to grant the permissions above, then re-run the check.
 
 ### 4. Liveness and results
 
