@@ -57,15 +57,15 @@ out-of-scope actions.
 
 A non-interactive `codex exec` ends the session whenever the model asks for
 confirmation, so the last line above matters. Keep one log per run
-(`codex-run<N>-<label>.log`) instead of a single `codex.log`; adjust the
-redirect targets in steps 2 and 3 accordingly.
+(`codex-run<N>-<label>.log`) instead of a single `codex.log`; steps 2-4 use
+`codex-run1-<label>.log` for the first run (bump N per run).
 
 Keep secrets out of the brief.
 
 ### 2. Plain detached launch (non-GUI work)
 
 ```sh
-ssh <mac> 'nohup sh -c "cat /tmp/brief.md | codex --dangerously-bypass-approvals-and-sandbox exec --skip-git-repo-check -c model_reasoning_effort=high -C <workdir> > <workdir>/codex.log 2>&1" >/dev/null 2>&1 &'
+ssh <mac> 'nohup sh -c "cat /tmp/brief.md | codex --dangerously-bypass-approvals-and-sandbox exec --skip-git-repo-check -c model_reasoning_effort=high -C <workdir> > <workdir>/codex-run1-<label>.log 2>&1" >/dev/null 2>&1 &'
 ```
 
 `--yolo` is the short alias for `--dangerously-bypass-approvals-and-sandbox`;
@@ -85,7 +85,7 @@ with Terminal:
 ```sh
 ssh <mac> 'cat > <workdir>/run.command' <<'SCRIPT'
 #!/bin/zsh
-cat /tmp/brief.md | codex --dangerously-bypass-approvals-and-sandbox exec --skip-git-repo-check -c model_reasoning_effort=high -C <workdir> > <workdir>/codex.log 2>&1
+cat /tmp/brief.md | codex --dangerously-bypass-approvals-and-sandbox exec --skip-git-repo-check -c model_reasoning_effort=high -C <workdir> > <workdir>/codex-run1-<label>.log 2>&1
 SCRIPT
 ssh <mac> 'chmod +x <workdir>/run.command && open -a Terminal <workdir>/run.command'
 ```
@@ -126,7 +126,7 @@ stop and ask the human to grant the permissions above, then re-run the check.
 ### 4. Liveness and results
 
 ```sh
-ssh <mac> 'pgrep -fl "codex.*exec"; tail -n 20 <workdir>/codex.log; head -1 <workdir>/REPORT.md'
+ssh <mac> 'pgrep -fl "codex.*exec"; tail -n 20 <workdir>/codex-run1-<label>.log; head -1 <workdir>/REPORT.md'
 ```
 
 Poll every 20-30 s from a background task, not in a foreground loop. The log
