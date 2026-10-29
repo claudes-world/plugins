@@ -1,0 +1,17 @@
+{
+  "required_paid_services": [],
+  "providers": [
+    {
+      "name": "VNC / RFB server",
+      "required": true,
+      "billing": "Any self-hosted VNC server (macOS Screen Sharing, x11vnc, TigerVNC). No paid service or API.",
+      "fallback": "Tools return an explicit error when VNC_HOST is unset, not allowlisted, or unreachable."
+    },
+    {
+      "name": "Pillow",
+      "required": false,
+      "billing": "Local library; no paid service.",
+      "fallback": "Stdlib PNG writer and nearest-neighbour downscaling."
+    }
+  ]
+}

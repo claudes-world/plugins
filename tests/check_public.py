@@ -6,7 +6,8 @@ import re
 import subprocess
 import sys
 
-CORE = frozenset({'docs-researcher', 'image-gen', 'interaction-craft', 'mindsets', 'operators', 'wingman'})
+CORE = frozenset({'docs-researcher', 'image-gen', 'interaction-craft', 'mindsets', 'operators',
+                  'vnc-computer', 'wingman'})
 METADATA = frozenset({'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', '.gitignore',
                      '.claude-plugin/marketplace.json', 'tests/check_public.py',
                      'tests/test_public_boundary.py', '.github/workflows/public-boundary.yml'})

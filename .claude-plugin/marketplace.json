@@ -104,6 +104,28 @@
       "source": "./plugins/operators"
     },
     {
+      "name": "vnc-computer",
+      "description": "VNC remote desktop computer use for Claude Code: a stdlib-Python MCP server for screen control of any VNC/RFB server (macOS Screen Sharing, x11vnc, TigerVNC). Screenshot, click, type, key chords, scroll, drag, zoom, plus fixed-rate screen recording to PNG frames for video assembly elsewhere.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Claude's World"
+      },
+      "keywords": [
+        "vnc",
+        "rfb",
+        "remote-desktop",
+        "computer-use",
+        "screen-control",
+        "screenshot",
+        "screen-recording",
+        "macos",
+        "screen-sharing",
+        "automation",
+        "mcp"
+      ],
+      "source": "./plugins/vnc-computer"
+    },
+    {
       "name": "wingman",
       "description": "A standalone Codex co-researcher MCP plugin with reusable named sessions and journaling.",
       "version": "0.2.4",

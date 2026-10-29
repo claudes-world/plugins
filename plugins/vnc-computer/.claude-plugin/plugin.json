@@ -1,0 +1,22 @@
+{
+  "name": "vnc-computer",
+  "version": "0.1.0",
+  "description": "VNC remote desktop computer use for Claude Code: a stdlib-Python MCP server for screen control of any VNC/RFB server (macOS Screen Sharing, x11vnc, TigerVNC). Screenshot, click, type, key chords, scroll, drag, zoom, plus fixed-rate screen recording to PNG frames for video assembly elsewhere.",
+  "author": {
+    "name": "Claude's World"
+  },
+  "keywords": [
+    "vnc",
+    "rfb",
+    "remote-desktop",
+    "computer-use",
+    "screen-control",
+    "screenshot",
+    "screen-recording",
+    "macos",
+    "screen-sharing",
+    "automation",
+    "mcp"
+  ],
+  "license": "MIT"
+}
