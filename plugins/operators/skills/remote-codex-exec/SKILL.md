@@ -28,24 +28,28 @@ hostnames, IPs and account names out of anything you commit.
 
 ### 1. Write the brief as a file and copy it over
 
-Write `brief.md` locally, then:
+Write the brief locally, then copy it into the per-run workdir (never a shared
+`/tmp/brief.md`: concurrent jobs would overwrite each other). Use an absolute
+`<workdir>`; every remote path below is double-quoted inside the single-quoted
+ssh command, so a workdir with spaces works but must not contain `"`, `$`, or
+backticks.
 
 ```sh
-ssh <mac> 'mkdir -p <workdir>'
-scp brief.md <mac>:/tmp/brief.md
+ssh <mac> 'mkdir -p "<workdir>"'
+scp brief.md "<mac>:<workdir>/brief-run1-<label>.md"
 ```
 
 The brief must end with a report contract and stop conditions:
 
 ```text
 Report contract:
-- Write <workdir>/REPORT.md when finished or stopped.
+- Write <workdir>/REPORT-run1-<label>.md when finished or stopped.
 - Its first line is exactly `STATUS: DONE` or `STATUS: BLOCKED (<reason>)`.
-- Name every deliverable by full path in REPORT.md.
+- Name every deliverable by full path in that report.
 
 Stop conditions:
 - Never type passwords.
-- If a login is missing, stop and write `LOGIN_REQUIRED` in REPORT.md.
+- If a login is missing, stop and write `LOGIN_REQUIRED` in that report.
 - If a macOS permission is missing, stop and write `PERMISSION_REQUIRED: <which>`.
 - If macOS demands the account password (for example "Privacy & Security is
   trying to modify your system settings"), stop and write
@@ -57,15 +61,17 @@ out-of-scope actions.
 
 A non-interactive `codex exec` ends the session whenever the model asks for
 confirmation, so the last line above matters. Keep one log per run
-(`codex-run<N>-<label>.log`) instead of a single `codex.log`; steps 2-4 use
-`codex-run1-<label>.log` for the first run (bump N per run).
+(`codex-run<N>-<label>.log`), brief (`brief-run<N>-<label>.md`) and report
+(`REPORT-run<N>-<label>.md`); a stale report from an earlier run can never read
+as DONE for the current one. Steps 2-4 use run 1 (bump N per run, and edit the
+report name in the brief).
 
 Keep secrets out of the brief.
 
 ### 2. Plain detached launch (non-GUI work)
 
 ```sh
-ssh <mac> 'nohup sh -c "cat /tmp/brief.md | codex --dangerously-bypass-approvals-and-sandbox exec --skip-git-repo-check -c model_reasoning_effort=high -C <workdir> > <workdir>/codex-run1-<label>.log 2>&1" >/dev/null 2>&1 &'
+ssh <mac> 'nohup sh -c "cat \"<workdir>/brief-run1-<label>.md\" | codex --dangerously-bypass-approvals-and-sandbox exec --skip-git-repo-check -c model_reasoning_effort=high -C \"<workdir>\" > \"<workdir>/codex-run1-<label>.log\" 2>&1" >/dev/null 2>&1 &'
 ```
 
 `--yolo` is the short alias for `--dangerously-bypass-approvals-and-sandbox`;
@@ -83,11 +89,11 @@ Write `<workdir>/run.command` (zsh, same pipeline), make it executable, open it
 with Terminal:
 
 ```sh
-ssh <mac> 'cat > <workdir>/run.command' <<'SCRIPT'
+ssh <mac> 'cat > "<workdir>/run.command"' <<'SCRIPT'
 #!/bin/zsh
-cat /tmp/brief.md | codex --dangerously-bypass-approvals-and-sandbox exec --skip-git-repo-check -c model_reasoning_effort=high -C <workdir> > <workdir>/codex-run1-<label>.log 2>&1
+cat "<workdir>/brief-run1-<label>.md" | codex --dangerously-bypass-approvals-and-sandbox exec --skip-git-repo-check -c model_reasoning_effort=high -C "<workdir>" > "<workdir>/codex-run1-<label>.log" 2>&1
 SCRIPT
-ssh <mac> 'chmod +x <workdir>/run.command && open -a Terminal <workdir>/run.command'
+ssh <mac> 'chmod +x "<workdir>/run.command" && open -a Terminal "<workdir>/run.command"'
 ```
 
 Terminal is the TCC principal, but launching from Terminal is not enough on
@@ -113,11 +119,11 @@ account password. The agent must stop with `PASSWORD_REQUIRED: <setting>`
 #### Pre-flight check (about 10 seconds, run BEFORE dispatching GUI work)
 
 ```sh
-ssh <mac> 'cat > /tmp/tcc-check.command <<EOF
+ssh <mac> 'd=$(mktemp -d) && cat > "$d/c.command" <<EOF
 #!/bin/zsh
-screencapture -x /tmp/tcc-check.png && echo CAPTURE_OK > /tmp/tcc-check.txt || echo CAPTURE_DENIED > /tmp/tcc-check.txt
+screencapture -x "$d/c.png" && echo CAPTURE_OK > "$d/r.txt" || echo CAPTURE_DENIED > "$d/r.txt"
 EOF
-chmod +x /tmp/tcc-check.command; rm -f /tmp/tcc-check.txt; open -a Terminal /tmp/tcc-check.command; sleep 5; cat /tmp/tcc-check.txt'
+chmod +x "$d/c.command"; open -a Terminal "$d/c.command"; sleep 5; cat "$d/r.txt"; rm -rf "$d"'
 ```
 
 Dispatch the GUI task only on `CAPTURE_OK`. On `CAPTURE_DENIED` (or no output),
@@ -126,7 +132,7 @@ stop and ask the human to grant the permissions above, then re-run the check.
 ### 4. Liveness and results
 
 ```sh
-ssh <mac> 'pgrep -fl "codex.*exec"; tail -n 20 <workdir>/codex-run1-<label>.log; head -1 <workdir>/REPORT.md'
+ssh <mac> 'pgrep -fl "codex.*exec"; tail -n 20 "<workdir>/codex-run1-<label>.log"; head -1 "<workdir>/REPORT-run1-<label>.md"'
 ```
 
 Poll every 20-30 s from a background task, not in a foreground loop. The log
@@ -138,7 +144,7 @@ Extract the id from the previous run's log BEFORE truncating or overwriting it,
 and never run `: > codex.log` before that copy:
 
 ```sh
-ssh <mac> 'grep -m1 "session id:" <workdir>/codex-run1-<label>.log'
+ssh <mac> 'grep -m1 "session id:" "<workdir>/codex-run1-<label>.log"'
 ```
 
 An EMPTY id is dangerous: `codex exec resume` with no id silently starts a NEW
@@ -149,10 +155,10 @@ When you resume to answer a confirmation the previous run stopped on, re-state
 the remaining steps in the directive; the resumed run should not be assumed to
 carry the plan forward.
 
-When `head -1 REPORT.md` shows `STATUS: DONE`, bring deliverables back:
+When `head -1` of the current run's report shows `STATUS: DONE`, bring deliverables back:
 
 ```sh
-scp <mac>:<workdir>/<deliverable> ./
+scp "<mac>:<workdir>/<deliverable>" ./
 ```
 
 On `LOGIN_REQUIRED` or `PERMISSION_REQUIRED: <which>`, ask the human to fix it,
