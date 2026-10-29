@@ -31,7 +31,7 @@ hostnames, IPs and account names out of anything you commit.
 Write the brief locally, then copy it into the per-run workdir (never a shared
 `/tmp/brief.md`: concurrent jobs would overwrite each other). Use an absolute
 `<workdir>`; every remote path below is double-quoted inside the single-quoted
-ssh command, so a workdir with spaces works but must not contain `"`, `$`, or
+ssh command, so a workdir with spaces works; neither `<workdir>` nor `<label>` may contain `'`, `"`, `$`, or
 backticks.
 
 ```sh
