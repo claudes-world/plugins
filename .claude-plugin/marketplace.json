@@ -92,14 +92,13 @@
     },
     {
       "name": "operators",
-      "description": "Policy-free operator dispatch MCP tools for Codex, agy, and Cursor.",
+      "description": "Policy-free operator dispatch MCP tools for Codex and agy.",
       "version": "0.2.4",
       "keywords": [
         "mcp",
         "codex",
         "operators",
-        "gemini",
-        "cursor"
+        "gemini"
       ],
       "source": "./plugins/operators"
     },

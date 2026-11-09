@@ -50,7 +50,6 @@ const CONFIG_PATH = process.env.OPERATORS_CONFIG_PATH ?? join(PLUGIN_DIR, 'confi
 const CONFIG = loadJson(CONFIG_PATH)
 const CODEX_BIN = process.env.OPERATORS_CODEX_BIN ?? 'codex'
 const AGY_BIN = process.env.OPERATORS_AGY_BIN ?? 'agy'
-const CURSOR_BIN = process.env.OPERATORS_CURSOR_BIN ?? 'cursor-agent'
 const RT: Runtime = runtimeFromConfig({
   configPath: CONFIG_PATH,
   stateEnv: 'OPERATORS_STATE_DIR',
@@ -60,7 +59,6 @@ const AGY_MODELS: Record<string, { model: string; efforts: string[]; defaultEffo
   'gemini-3.1-pro': { model: 'gemini-3.1-pro', efforts: ['low', 'high'], defaultEffort: 'high' },
   'gemini-3.5-flash': { model: 'gemini-3.5-flash', efforts: ['low', 'medium', 'high'], defaultEffort: 'high' },
 }
-const CURSOR_MODELS = Array.isArray(CONFIG.cursor_models) ? CONFIG.cursor_models.map(String) : []
 // Fresh Codex dispatches pin this unless the caller passes `model`; resumes reuse the session's model.
 const CODEX_DEFAULT_MODEL = 'gpt-6.1-sol'
 
@@ -262,25 +260,6 @@ async function agyAsk(args: JsonObject) {
   )
 }
 
-async function cursorAsk(args: JsonObject) {
-  const model = requiredString(args, 'model')
-  if (!CURSOR_MODELS.includes(model)) throw new Error(`cursor model not allowed: ${model}`)
-  const prompt = readPromptArg(args, 'prompt', 'prompt_path')
-  const cwd = resolve(expandHome(requiredString(args, 'cwd')))
-  const argv = [CURSOR_BIN, '-p', '--force', '--model', model, '--output-format', 'text']
-  const path = logPath(RT, 'cursor', 'ask')
-  const { run, final } = await runForeground(RT, argv, cwd, prompt, path, null)
-  return content(
-    toolText(final.ok ? tailFile(RT, path) : `cursor_ask failed: ${final.error}\n\n${tailFile(RT, path)}`, {
-      model,
-      duration_ms: run.durationMs,
-      exit_code: run.exitCode,
-      log_path: path,
-    }),
-    !final.ok,
-  )
-}
-
 const tools = [
   { name: 'codex_plan', description: 'Stage 1 plan-only Codex dispatch.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, brief_path: { type: 'string' }, cwd: { type: 'string' }, model: { type: 'string', description: 'Codex model. Defaults to gpt-6.1-sol.' }, effort: { type: 'string', enum: ['low', 'medium', 'high', 'xhigh'] }, sandbox: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, network: { type: 'boolean', description: 'Under workspace-write, whether outbound network is enabled (default true) via sandbox_workspace_write.network_access. No effect under danger-full-access.' }, background: { type: 'boolean' }, replace: { type: 'boolean' } }, required: ['session', 'brief_path', 'cwd'] } },
   { name: 'codex_exec', description: 'One-shot fresh Codex dispatch with no registry entry.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, brief: { type: 'string' }, brief_path: { type: 'string' }, cwd: { type: 'string' }, model: { type: 'string', description: 'Codex model. Defaults to gpt-6.1-sol.' }, effort: { type: 'string', enum: ['low', 'medium', 'high', 'xhigh'] }, sandbox: { type: 'string', enum: ['workspace-write', 'danger-full-access'] }, network: { type: 'boolean', description: 'Under workspace-write, whether outbound network is enabled (default true) via sandbox_workspace_write.network_access. No effect under danger-full-access.' }, background: { type: 'boolean' } }, required: ['cwd'] } },
@@ -288,7 +267,6 @@ const tools = [
   { name: 'codex_critique', description: 'Resume Codex for self-critique.', inputSchema: { type: 'object', properties: { session: { type: 'string' }, question: { type: 'string' } }, required: ['session'] } },
   { name: 'codex_result', description: 'Fetch a background Codex job.', inputSchema: { type: 'object', properties: { job: { type: 'string' }, wait_seconds: { type: 'number' } }, required: ['job'] } },
   { name: 'agy_ask', description: 'One-shot Gemini-only agy dispatch.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, prompt_path: { type: 'string' }, model: { type: 'string', enum: Object.keys(AGY_MODELS) }, effort: { type: 'string', enum: ['low', 'high'], description: 'Model-specific effort: gemini-3.1-pro accepts low/high; gemini-3.5-flash accepts low/medium/high. Omitting effort selects the model default.' }, add_dirs: { type: 'array', items: { type: 'string' } }, cwd: { type: 'string' }, raw: { type: 'boolean' } }, required: ['model', 'cwd'] } },
-  { name: 'cursor_ask', description: 'One-shot Cursor dispatch for configured GPT/Codex and Opus 4.6 models.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, prompt_path: { type: 'string' }, model: { type: 'string', enum: CURSOR_MODELS }, cwd: { type: 'string' } }, required: ['model', 'cwd'] } },
   { name: 'operator_sessions', description: 'List Codex implementation sessions.', inputSchema: { type: 'object', properties: { name: { type: 'string' } } } },
 ]
 
@@ -313,8 +291,6 @@ mcp.setRequestHandler(CallToolRequestSchema, async req => {
         return await operatorResult(RT, requiredString(args, 'job'), args.wait_seconds)
       case 'agy_ask':
         return await agyAsk(args)
-      case 'cursor_ask':
-        return await cursorAsk(args)
       case 'operator_sessions':
         return codexSessions(args)
       default:

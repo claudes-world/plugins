@@ -9,13 +9,6 @@
       "fallback": "Calling this tool reports a spawn error if its CLI is absent; other tools remain available."
     },
     {
-      "name": "Cursor",
-      "command": "cursor-agent",
-      "required": false,
-      "billing": "Optional paid account/usage provider; never called unless explicitly selected.",
-      "fallback": "Calling this tool reports a spawn error if its CLI is absent; other tools remain available."
-    },
-    {
       "name": "agy adapter",
       "command": "agy",
       "required": false,

@@ -23,7 +23,7 @@ function events(){ const raw=readFileSync(tracePath,'utf8').trim(); return raw?r
 function last(t){ return events().filter(e=>e.tool===t).at(-1) }
 async function rpc(method, params={}, timeoutMs=60000){
   const input=[JSON.stringify({jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-06-18',capabilities:{},clientInfo:{name:'operators-harness',version:'0.0.1'}}}),JSON.stringify({jsonrpc:'2.0',method:'notifications/initialized',params:{}}),JSON.stringify({jsonrpc:'2.0',id:2,method,params})].join('\n')+'\n'
-  const p=Bun.spawn(['bun','server.bundle.js'],{cwd:pluginDir,stdin:new Blob([input]),stdout:'pipe',stderr:'pipe',env:{...process.env,OPERATORS_TEST_TRANSPORT:'bun-line',OPERATORS_STATE_DIR:state,OPERATORS_CODEX_BIN:join(pluginDir,'test-stubs/codex'),OPERATORS_AGY_BIN:join(pluginDir,'test-stubs/agy'),OPERATORS_CURSOR_BIN:join(pluginDir,'test-stubs/cursor-agent'),OPERATORS_STUB_TRACE:tracePath}})
+  const p=Bun.spawn(['bun','server.bundle.js'],{cwd:pluginDir,stdin:new Blob([input]),stdout:'pipe',stderr:'pipe',env:{...process.env,OPERATORS_TEST_TRANSPORT:'bun-line',OPERATORS_STATE_DIR:state,OPERATORS_CODEX_BIN:join(pluginDir,'test-stubs/codex'),OPERATORS_AGY_BIN:join(pluginDir,'test-stubs/agy'),OPERATORS_STUB_TRACE:tracePath}})
   let timer; const status=await Promise.race([p.exited.then(()=> 'exited'), new Promise(r=>timer=setTimeout(()=>r('timeout'),timeoutMs))]); clearTimeout(timer)
   if(status==='timeout'){ p.kill(); throw new Error(`timeout ${method}`) }
   const out=await new Response(p.stdout).text(), err=await new Response(p.stderr).text(); if(err.trim()) process.stderr.write(err)
@@ -32,7 +32,7 @@ async function rpc(method, params={}, timeoutMs=60000){
 const callTool=(name,args,timeout)=>rpc('tools/call',{name,arguments:args},timeout)
 
 const listed=await rpc('tools/list')
-for(const n of ['codex_plan','codex_exec','codex_implement','codex_critique','codex_result','agy_ask','cursor_ask','operator_sessions']) assert(listed.tools.some(t=>t.name===n),`missing ${n}`)
+for(const n of ['codex_plan','codex_exec','codex_implement','codex_critique','codex_result','agy_ask','operator_sessions']) assert(listed.tools.some(t=>t.name===n),`missing ${n}`)
 const agyEffortSchema=listed.tools.find(t=>t.name==='agy_ask')?.inputSchema?.properties?.effort
 assert(JSON.stringify(agyEffortSchema?.enum)===JSON.stringify(['low','high']),'agy effort schema must advertise only values accepted by every model')
 assert(agyEffortSchema?.description?.includes('gemini-3.5-flash accepts low/medium/high'),'agy effort schema missing per-model detail')
@@ -65,9 +65,6 @@ res=await callTool('agy_ask',{prompt:'Analyze pro.',model:'gemini-3.1-pro',effor
 before=events().filter(e=>e.tool==='agy').length; res=await callTool('agy_ask',{prompt:'Invalid effort.',model:'gemini-3.1-pro',effort:'medium',cwd:work}); assert(res.isError&&text(res).includes('allowed: low, high'),'agy invalid effort accepted'); assert(events().filter(e=>e.tool==='agy').length===before,'agy invalid effort spawned')
 res=await callTool('agy_ask',{prompt:'Analyze this.',model:'gemini-3.5-flash'}); assert(res.isError&&text(res).includes('cwd'),'agy cwd required')
 res=await callTool('agy_ask',{prompt:'Bad.',model:'gpt-5.3-codex'}); assert(res.isError,'agy reject')
-res=await callTool('cursor_ask',{prompt:'Cursor prompt.',model:'gpt-5.3-codex',cwd:work}); assert(!res.isError,`cursor failed ${text(res)}`); ev=last('cursor'); assert(ev.cwd===work,'cursor cwd'); assert(ev.argv.join(' ')==='-p --force --model gpt-5.3-codex --output-format text','cursor argv'); assert(ev.stdin==='Cursor prompt.','cursor stdin')
-res=await callTool('cursor_ask',{prompt:'Cursor prompt.',model:'gpt-5.3-codex'}); assert(res.isError&&text(res).includes('cwd'),'cursor cwd required')
-res=await callTool('cursor_ask',{prompt:'Bad.',model:'gemini-3.5-flash'}); assert(res.isError,'cursor reject')
 console.log('operators harness: all assertions passed')
 JS
 
