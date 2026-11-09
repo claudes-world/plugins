@@ -1,6 +1,6 @@
 # Operators MCP Plugin
 
-Policy-free dispatch tools for teammate CLIs: Codex for coding, Gemini through `agy`, and verified Cursor models.
+Policy-free dispatch tools for teammate CLIs: Codex for coding, and Gemini through `agy`.
 
 This server dispatches explicit requests. Apply your own review and service-use policy.
 
@@ -12,7 +12,6 @@ This server dispatches explicit requests. Apply your own review and service-use 
 - `codex_exec`: one-shot fresh Codex call for quick work that does not need a registry entry.
 - `codex_result`: fetch a background Codex job.
 - `agy_ask`: one-shot Gemini-only analysis via `agy`.
-- `cursor_ask`: one-shot Cursor analysis for the configured GPT/Codex and Opus 4.6 allow-list.
 - `operator_sessions`: list or inspect Codex implementation sessions.
 
 ## Codex Steering Pattern
@@ -41,11 +40,7 @@ codex exec --skip-git-repo-check --sandbox <mode> -c approval_policy=never resum
 
 `agy` is Gemini-only. Non-Gemini model requests are rejected. `agy_ask` accepts optional `effort`: `gemini-3.1-pro` allows `low`/`high`, while `gemini-3.5-flash` allows `low`/`medium`/`high`. Both default to `high` when omitted.
 
-`cursor` is GPT/Codex + Opus 4.6 only. Cursor CLI calls are expensive; use them for deliberate dispatches, not loops.
-
-`codex_exec`, `agy_ask`, and `cursor_ask` require `cwd` on every call.
-
-The cursor model allow-list in `config.json` was verified with `cursor-agent models` on 2026-07-02. Re-verify after Cursor updates.
+`codex_exec` and `agy_ask` require `cwd` on every call.
 
 ## State
 
@@ -80,6 +75,5 @@ stubs only. Missing CLI calls return an error while session inspection still wor
 The optional `agy` adapter must accept `--model MODEL --effort EFFORT`, optional
 `--add-dir PATH` arguments, `--sandbox --dangerously-skip-permissions`, and `-p PROMPT`, and return analysis on stdout.
 It is user-supplied: no private adapter repository or host installation is needed
-for Codex, Cursor or session-listing tools. `OPERATORS_AGY_BIN` can select an
-implementation of that contract. Cursor similarly uses `OPERATORS_CURSOR_BIN`;
-Codex uses `OPERATORS_CODEX_BIN`. These optional accounts may incur charges.
+for Codex or session-listing tools. `OPERATORS_AGY_BIN` can select an
+implementation of that contract. Codex uses `OPERATORS_CODEX_BIN`. These optional accounts may incur charges.

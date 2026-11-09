@@ -15,11 +15,10 @@ test('installed MCP reports absent optional CLIs and still lists sessions', asyn
   const absent = join(scratch, 'absent-cli')
   const env = { ...process.env, [`${prefix}_STATE_DIR`]: join(scratch, 'state'),
     [`${prefix}_TEST_TRANSPORT`]: 'bun-line', [`${prefix}_CODEX_BIN`]: absent,
-    OPERATORS_AGY_BIN: absent, OPERATORS_CURSOR_BIN: absent }
+    OPERATORS_AGY_BIN: absent }
   const calls = name === 'wingman'
     ? [['wingman_ask', { session: 'missing', message: 'fixture', new: { cwd: scratch } }]]
     : [['codex_exec', { brief: 'fixture', cwd: scratch }],
-       ['cursor_ask', { prompt: 'fixture', model: 'gpt-5.3-codex', cwd: scratch }],
        ['agy_ask', { prompt: 'fixture', model: 'gemini-3.5-flash', cwd: scratch }]]
   try {
     const messages: any[] = [
