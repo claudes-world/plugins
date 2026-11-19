@@ -11,10 +11,10 @@ This plugin is standalone. Install it by itself when you only want the co-resear
 
 ## Modes
 
-Fresh sessions use `gpt-6-astra` with `low` reasoning effort by default. `new.effort` still overrides effort. Resume calls continue
+Fresh sessions use `gpt-6.2-astra` with `low` reasoning effort by default. `new.effort` still overrides effort. Resume calls continue
 the existing Codex session on its recorded model (`-m` is passed on resume
 because `codex exec resume` without it runs on the CLI config default); a record
-without a model resumes on `gpt-6-astra`. Session records are not rewritten. After updating the plugin cache, reconnect
+without a model resumes on `gpt-6.2-astra`. Session records are not rewritten. After updating the plugin cache, reconnect
 the Wingman MCP server and create a fresh named session to pick up the new default.
 
 - `open-question`: explore tradeoffs and answer directly.
