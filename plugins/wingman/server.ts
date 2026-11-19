@@ -37,7 +37,7 @@ import {
 
 const PLUGIN_DIR = dirname(fileURLToPath(import.meta.url))
 const CODEX_BIN = process.env.WINGMAN_CODEX_BIN ?? process.env.OPERATORS_CODEX_BIN ?? 'codex'
-const WINGMAN_MODEL = 'gpt-6-astra'
+const WINGMAN_MODEL = 'gpt-6.2-astra'
 const RT: Runtime = runtimeFromConfig({
   configPath: process.env.WINGMAN_CONFIG_PATH ?? join(PLUGIN_DIR, 'config.json'),
   stateEnv: 'WINGMAN_STATE_DIR',
